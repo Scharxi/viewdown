@@ -1,0 +1,869 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background: #f8f9fa;
+  color: #24292f;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background: white;
+  border-bottom: 1px solid #e1e4e8;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #24292f;
+}
+
+.btn-primary {
+  background: #2da44e;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background: #2c974b;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* File Info */
+.file-info {
+  background: #f6f8fa;
+  border-bottom: 1px solid #e1e4e8;
+  padding: 0.75rem 2rem;
+}
+
+.file-path {
+  font-size: 0.875rem;
+  color: #57606a;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 3rem 2rem;
+  overflow-y: auto;
+}
+
+/* Markdown Body */
+.markdown-body {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateZ(0);
+  max-width: 900px;
+  width: 100%;
+  background: white;
+  padding: 3rem 4rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  line-height: 1.6;
+  will-change: auto;
+  contain: layout style paint;
+}
+
+.markdown-body.active {
+  will-change: contents;
+}
+
+/* Typography */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #24292f;
+}
+
+.markdown-body h1 {
+  font-size: 2em;
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body h3 {
+  font-size: 1.25em;
+}
+
+.markdown-body h4 {
+  font-size: 1em;
+}
+
+.markdown-body p {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+/* Links */
+.markdown-body a {
+  color: #0969da;
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+/* Inline Code - nur für Code NICHT in pre */
+.markdown-body code:not(pre code) {
+  background: #f6f8fa;
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace;
+  color: #24292f;
+}
+
+/* Code Blocks - für SyntaxHighlighter */
+.markdown-body pre {
+  background: #282c34 !important;
+  padding: 0 !important;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1em 0;
+  border: 1px solid #e1e4e8;
+}
+
+.markdown-body pre code {
+  background: transparent !important;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875em;
+  color: inherit;
+}
+
+/* SyntaxHighlighter Container Override */
+.markdown-body pre > div {
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 1rem !important;
+  border-radius: 6px;
+}
+
+/* SyntaxHighlighter Code Element */
+.markdown-body pre > div > code {
+  background: transparent !important;
+  font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace !important;
+  font-size: 0.875em !important;
+}
+
+/* Lists */
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 2em;
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.markdown-body li {
+  margin-top: 0.25em;
+}
+
+.markdown-body li + li {
+  margin-top: 0.25em;
+}
+
+/* Blockquotes */
+.markdown-body blockquote {
+  padding: 0 1em;
+  color: #57606a;
+  border-left: 0.25em solid #d0d7de;
+  margin: 1em 0;
+}
+
+.markdown-body blockquote > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* Tables */
+.markdown-body table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d0d7de;
+}
+
+.markdown-body table th {
+  background: #f6f8fa;
+  font-weight: 600;
+  text-align: left;
+}
+
+.markdown-body table tr:nth-child(even) {
+  background: #f6f8fa;
+}
+
+/* Horizontal Rule */
+.markdown-body hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 1.5em 0;
+  background-color: #e1e4e8;
+  border: 0;
+}
+
+/* Images */
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 1em 0;
+}
+
+/* Scrollbar */
+.content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 5px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Tabs Container */
+.tabs-container {
+  background: #f6f8fa;
+  border-bottom: 1px solid #e1e4e8;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tabs-list {
+  display: flex;
+  min-height: 42px;
+  padding: 0 1rem;
+  gap: 2px;
+}
+
+/* Individual Tab */
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem 1rem;
+  background: #e1e4e8;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  border-bottom: none;
+  min-width: 120px;
+  max-width: 200px;
+  position: relative;
+  top: 1px;
+}
+
+.tab:hover {
+  background: #d0d7de;
+}
+
+.tab.active {
+  background: white;
+  border-color: #e1e4e8;
+  border-bottom-color: white;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.tab-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: #24292f;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: #57606a;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tab-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #24292f;
+}
+
+.tab.active .tab-close:hover {
+  background: #e1e4e8;
+}
+
+/* Empty State */
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.empty-state-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.empty-state-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #24292f;
+}
+
+.empty-state-content p {
+  color: #57606a;
+  margin-bottom: 1.5rem;
+}
+
+/* Scrollbar für Tabs */
+.tabs-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tabs-container::-webkit-scrollbar-track {
+  background: #f6f8fa;
+}
+
+.tabs-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.tabs-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Drag & Drop Overlay */
+.drop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(45, 164, 78, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.drop-overlay-content {
+  text-align: center;
+  color: white;
+}
+
+.drop-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounce 0.6s ease-in-out infinite;
+}
+
+.drop-overlay-content p {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Dragging State */
+.app.dragging .content {
+  position: relative;
+}
+
+.app.dragging .markdown-body {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .markdown-body {
+    padding: 2rem 1.5rem;
+    left: 0;
+    transform: translateX(0) translateZ(0);
+    width: calc(100% - 4rem);
+    margin: 0 2rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+}
+
+/* Theme Variables */
+:root {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: white;
+  --bg-tertiary: #f6f8fa;
+  --border-color: #e1e4e8;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --code-bg: #f6f8fa;
+  --code-block-bg: #282c34;
+  --link-color: #0969da;
+  --tab-bg: #e1e4e8;
+  --tab-hover: #d0d7de;
+}
+
+body[data-theme="dark"] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --border-color: #30363d;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --code-bg: #161b22;
+  --code-block-bg: #161b22;
+  --link-color: #58a6ff;
+  --tab-bg: #21262d;
+  --tab-hover: #30363d;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+  color: var(--text-primary);
+}
+
+/* Header Actions Group */
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Theme Toggle Button */
+.btn-theme {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+}
+
+.btn-theme:hover {
+  background: var(--tab-hover);
+  transform: translateY(-1px);
+}
+
+/* Tabs */
+.tabs-container {
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+  background: var(--tab-bg);
+  border-color: transparent;
+}
+
+.tab:hover {
+  background: var(--tab-hover);
+}
+
+.tab.active {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  border-bottom-color: var(--bg-secondary);
+}
+
+.tab-name {
+  color: var(--text-primary);
+}
+
+.tab-close {
+  color: var(--text-secondary);
+}
+
+.tab-close:hover {
+  color: var(--text-primary);
+}
+
+/* Content */
+.markdown-body {
+  background: var(--bg-secondary);
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  color: var(--text-primary);
+}
+
+.markdown-body h1,
+.markdown-body h2 {
+  border-bottom-color: var(--border-color);
+}
+
+.markdown-body a {
+  color: var(--link-color);
+}
+
+/* Inline Code */
+.markdown-body code:not(pre code) {
+  background: var(--code-bg);
+  color: var(--text-primary);
+}
+
+/* Code Blocks */
+.markdown-body pre {
+  background: var(--code-block-bg) !important;
+  border-color: var(--border-color);
+}
+
+/* Tables */
+.markdown-body table th,
+.markdown-body table td {
+  border-color: var(--border-color);
+}
+
+.markdown-body table th {
+  background: var(--bg-tertiary);
+}
+
+.markdown-body table tr:nth-child(even) {
+  background: var(--bg-tertiary);
+}
+
+/* Blockquotes */
+.markdown-body blockquote {
+  color: var(--text-secondary);
+  border-left-color: var(--border-color);
+}
+
+/* HR */
+.markdown-body hr {
+  background-color: var(--border-color);
+}
+
+/* Empty State */
+.empty-state-content h2 {
+  color: var(--text-primary);
+}
+
+.empty-state-content p {
+  color: var(--text-secondary);
+}
+
+/* Ersetze/Update diese Scrollbar-Sections in deiner CSS-Datei */
+
+/* Theme Variables - füge Scrollbar-Farben hinzu */
+:root {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: white;
+  --bg-tertiary: #f6f8fa;
+  --border-color: #e1e4e8;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --code-bg: #f6f8fa;
+  --code-block-bg: #282c34;
+  --link-color: #0969da;
+  --tab-bg: #e1e4e8;
+  --tab-hover: #d0d7de;
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.35);
+}
+
+body[data-theme="dark"] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --border-color: #30363d;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --code-bg: #161b22;
+  --code-block-bg: #161b22;
+  --link-color: #58a6ff;
+  --tab-bg: #21262d;
+  --tab-hover: #30363d;
+  --scrollbar-track: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+}
+
+/* Main Content Scrollbar - Moderne, dünne Version */
+.content::-webkit-scrollbar {
+  width: 12px;
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+  margin: 4px 0;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+  border: 3px solid var(--bg-primary);
+  transition: background 0.2s ease;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  border: 2px solid var(--bg-primary);
+}
+
+.content::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-hover);
+  border: 1px solid var(--bg-primary);
+}
+
+/* Tabs Container Scrollbar - Horizontal */
+.tabs-container::-webkit-scrollbar {
+  height: 8px;
+  background: transparent;
+}
+
+.tabs-container::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 8px;
+  margin: 0 8px;
+}
+
+.tabs-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 8px;
+  border: 2px solid var(--bg-tertiary);
+  transition: background 0.2s ease;
+}
+
+.tabs-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  border: 1px solid var(--bg-tertiary);
+}
+
+.tabs-container::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Optional: Scrollbar für Markdown Body (falls lange Code-Blöcke) */
+.markdown-body::-webkit-scrollbar {
+  width: 10px;
+  background: transparent;
+}
+
+.markdown-body::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 8px;
+}
+
+.markdown-body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 8px;
+  border: 2px solid var(--bg-secondary);
+  transition: background 0.2s ease;
+}
+
+.markdown-body::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Code Block Horizontal Scrollbar */
+.markdown-body pre::-webkit-scrollbar {
+  height: 8px;
+  background: transparent;
+}
+
+.markdown-body pre::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 0 8px;
+}
+
+.markdown-body pre::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.markdown-body pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Firefox Scrollbar Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.tabs-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* Code Block Background - Theme-abhängig */
+:root {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: white;
+  --bg-tertiary: #f6f8fa;
+  --border-color: #e1e4e8;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --code-bg: #f6f8fa;
+  --code-block-bg: #f6f8fa;  /* Ändere zu hellem Grau für Light Mode */
+  --link-color: #0969da;
+  --tab-bg: #e1e4e8;
+  --tab-hover: #d0d7de;
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.35);
+}
+
+body[data-theme="dark"] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --border-color: #30363d;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --code-bg: #161b22;
+  --code-block-bg: #0d1117;  /* Dunkler für Dark Mode */
+  --link-color: #58a6ff;
+  --tab-bg: #21262d;
+  --tab-hover: #30363d;
+  --scrollbar-track: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+}
+
+/* Code Blocks - Theme-aware Background */
+.markdown-body pre {
+  background: var(--code-block-bg) !important;
+  border-color: var(--border-color);
+}
+
+/* Light Mode spezifische Code Block Styles */
+body:not([data-theme="dark"]) .markdown-body pre {
+  background: #f6f8fa !important;
+  border: 1px solid #d0d7de;
+}
+
+body:not([data-theme="dark"]) .markdown-body pre > div {
+  background: transparent !important;
+}
+
+/* Dark Mode spezifische Code Block Styles */
+body[data-theme="dark"] .markdown-body pre {
+  background: #0d1117 !important;
+  border: 1px solid #30363d;
+}
+
+body[data-theme="dark"] .markdown-body pre > div {
+  background: transparent !important;
+}
+
