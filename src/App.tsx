@@ -229,6 +229,49 @@ function App() {
         };
     }, []);
 
+    // Ensure the webview accepts drop anywhere by preventing default browser behavior
+    useEffect(() => {
+        const onDragOver = (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        const onDrop = (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        const onDragEnter = (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        const onDragLeave = (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+
+        // Add event listeners to the entire document
+        document.addEventListener('dragover', onDragOver, { passive: false });
+        document.addEventListener('drop', onDrop, { passive: false });
+        document.addEventListener('dragenter', onDragEnter, { passive: false });
+        document.addEventListener('dragleave', onDragLeave, { passive: false });
+
+        // Also add to window for extra coverage
+        window.addEventListener('dragover', onDragOver, { passive: false });
+        window.addEventListener('drop', onDrop, { passive: false });
+        window.addEventListener('dragenter', onDragEnter, { passive: false });
+        window.addEventListener('dragleave', onDragLeave, { passive: false });
+
+        return () => {
+            document.removeEventListener('dragover', onDragOver);
+            document.removeEventListener('drop', onDrop);
+            document.removeEventListener('dragenter', onDragEnter);
+            document.removeEventListener('dragleave', onDragLeave);
+            window.removeEventListener('dragover', onDragOver);
+            window.removeEventListener('drop', onDrop);
+            window.removeEventListener('dragenter', onDragEnter);
+            window.removeEventListener('dragleave', onDragLeave);
+        };
+    }, []);
+
     async function openMarkdownFile() {
         try {
             const selected = await open({
@@ -264,7 +307,25 @@ function App() {
     }
 
     return (
-        <div className={`app ${isDragging ? 'dragging' : ''}`}>
+        <div 
+            className={`app ${isDragging ? 'dragging' : ''}`}
+            onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }}
+            onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }}
+            onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }}
+            onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }}
+        >
             <header className="header">
                 <h1 className="title">Markdown Reader</h1>
                 <div className="header-actions">

@@ -64,6 +64,10 @@ body[data-theme="dark"] {
   display: flex;
   flex-direction: column;
   cursor: default;
+  /* Ensure the entire app is a drop zone */
+  position: relative;
+  width: 100%;
+  height: 100vh;
 }
 
 .content {
@@ -73,6 +77,8 @@ body[data-theme="dark"] {
   justify-content: center;
   padding: 4rem 2rem 3rem 2rem;
   overflow-y: auto;
+  /* Ensure content area accepts drops */
+  min-height: 0;
 }
 
 /* ============================================
@@ -533,6 +539,9 @@ body[data-theme="dark"] .markdown-body pre {
   justify-content: center;
   z-index: 9999;
   pointer-events: none;
+  /* Ensure overlay covers the entire window */
+  width: 100vw;
+  height: 100vh;
 }
 
 .drop-overlay-content {
@@ -592,6 +601,20 @@ body[data-theme="dark"] .markdown-body pre {
 .app.dragging .btn-theme,
 .app.dragging .tab-close {
   pointer-events: none;
+}
+
+/* Ensure all elements can receive drag events */
+.app * {
+  pointer-events: auto;
+}
+
+/* Make sure the app itself and all its children accept drops */
+.app,
+.app * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* ============================================
