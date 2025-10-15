@@ -48,6 +48,8 @@
         {
           "name": "file",
           "description": "Markdown file to open",
+          "takesValue": true,
+          "multiple": false,
           "index": 1
         }
       ]
