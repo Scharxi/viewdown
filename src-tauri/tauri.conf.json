@@ -40,5 +40,17 @@
         "depends": []
       }
     }
+  },
+  "plugins": {
+    "cli": {
+      "description": "Modern Markdown Reader",
+      "args": [
+        {
+          "name": "file",
+          "description": "Markdown file to open",
+          "index": 1
+        }
+      ]
+    }
   }
 }
