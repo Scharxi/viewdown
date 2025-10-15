@@ -4077,6 +4077,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-cli"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53e76101cc9848adfb6a04aae48a389062be457a785bb4349ae1423ddab5a82d"
+dependencies = [
+ "clap",
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.17",
+]
+
+[[package]]
 name = "tauri-plugin-dialog"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4769,6 +4784,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-cli",
  "tauri-plugin-dialog",
  "tauri-plugin-fs",
  "tauri-plugin-opener",
