@@ -10,12 +10,14 @@
     "fs:allow-read-text-file",
     "dialog:allow-open",
     "core:event:default",
+    "cli:default",
     {
       "identifier": "fs:scope",
       "allow": [
         { "path": "$HOME/**" },
         { "path": "$DOCUMENT/**" },
-        { "path": "$DOWNLOAD/**" }
+        { "path": "$DOWNLOAD/**" },
+        { "path": "**" }
       ]
     }
   ]
