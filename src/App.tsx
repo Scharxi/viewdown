@@ -74,7 +74,6 @@ function App() {
     const [activeTabId, setActiveTabId] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(() => {
-        // Lade Theme aus localStorage
         const savedTheme = localStorage.getItem('theme');
         return savedTheme === 'dark';
     });
@@ -86,6 +85,63 @@ function App() {
         document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
+    // openFileByPath mit useCallback, damit es immer den aktuellen State hat
+    const openFileByPath = useCallback(async (filePath: string) => {
+        console.log('Opening file:', filePath);
+
+        try {
+            const content = await readTextFile(filePath);
+            const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
+
+            setTabs(currentTabs => {
+                // Prüfe ob Tab bereits existiert
+                const existingTab = currentTabs.find(tab => tab.filePath === filePath);
+                if (existingTab) {
+                    setActiveTabId(existingTab.id);
+                    return currentTabs;
+                }
+
+                // Neuen Tab erstellen
+                tabIdCounter.current++;
+                const newTab: Tab = {
+                    id: `tab-${Date.now()}-${tabIdCounter.current}`,
+                    filePath,
+                    fileName,
+                    content
+                };
+
+                setActiveTabId(newTab.id);
+                return [...currentTabs, newTab];
+            });
+
+            console.log('File opened successfully:', fileName);
+        } catch (error) {
+            console.error('Fehler beim Öffnen der Datei:', error);
+            console.error('Pfad:', filePath);
+        }
+    }, []);
+
+    // CLI File Open Event Listener
+    useEffect(() => {
+        let unlistenCli: (() => void) | undefined;
+
+        const setupCliListener = async () => {
+            console.log('Setting up CLI listener...');
+            unlistenCli = await listen<string>('cli-open-file', async (event) => {
+                console.log('CLI event received:', event.payload);
+                await openFileByPath(event.payload);
+            });
+            console.log('CLI listener ready');
+        };
+
+        setupCliListener();
+
+        return () => {
+            if (unlistenCli) unlistenCli();
+        };
+    }, [openFileByPath]);
+
+    // Drag & Drop Event Listeners
     useEffect(() => {
         let unlistenEnter: (() => void) | undefined;
         let unlistenLeave: (() => void) | undefined;
@@ -172,33 +228,6 @@ function App() {
             if (unlistenDrop) unlistenDrop();
         };
     }, []);
-
-    async function openFileByPath(filePath: string) {
-        // Prüfe zuerst ob Tab bereits existiert
-        const existingTab = tabs.find(tab => tab.filePath === filePath);
-        if (existingTab) {
-            setActiveTabId(existingTab.id);
-            return;
-        }
-
-        try {
-            const content = await readTextFile(filePath);
-            const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
-            tabIdCounter.current++;
-            const newTab: Tab = {
-                id: `tab-${Date.now()}-${tabIdCounter.current}`,
-                filePath,
-                fileName,
-                content
-            };
-
-            setTabs(prev => [...prev, newTab]);
-            setActiveTabId(newTab.id);
-        } catch (error) {
-            console.error('Fehler beim Öffnen der Datei:', error);
-        }
-    }
-
 
     async function openMarkdownFile() {
         try {
