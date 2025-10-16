@@ -90,8 +90,6 @@ function App() {
 
     // NEUE LÖSUNG: Verwende flushSync für synchrones State Update
     const openFileByPath = useCallback(async (filePath: string) => {
-        console.log('Opening file:', filePath);
-
         try {
             const content = await readTextFile(filePath);
             const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
@@ -99,7 +97,6 @@ function App() {
             // Prüfe ob Tab bereits existiert
             const existingTab = tabs.find(tab => tab.filePath === filePath);
             if (existingTab) {
-                console.log('Tab exists, activating:', existingTab.id);
                 setActiveTabId(existingTab.id);
                 return;
             }
@@ -114,8 +111,6 @@ function App() {
                 content
             };
 
-            console.log('Creating new tab:', newTabId);
-
             // Verwende flushSync um sicherzustellen dass der Tab gerendert wird
             flushSync(() => {
                 setTabs(prev => [...prev, newTab]);
@@ -123,8 +118,6 @@ function App() {
 
             // Jetzt ist der Tab garantiert im DOM
             setActiveTabId(newTabId);
-            console.log('Tab activated:', newTabId);
-
         } catch (error) {
             console.error('Fehler beim Öffnen der Datei:', error);
             console.error('Pfad:', filePath);
@@ -135,12 +128,9 @@ function App() {
         let unlistenCli: (() => void) | undefined;
 
         const setupCliListener = async () => {
-            console.log('Setting up CLI listener...');
             unlistenCli = await listen<string>('cli-open-file', async (event) => {
-                console.log('CLI event received:', event.payload);
                 await openFileByPath(event.payload);
             });
-            console.log('CLI listener ready');
         };
 
         setupCliListener();
