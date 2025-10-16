@@ -639,3 +639,105 @@ body[data-theme="dark"] .markdown-body pre {
     width: 100%;
   }
 }
+
+/* ============================================
+   RECENT FILES
+   ============================================ */
+.recent-files {
+  margin-top: 3rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.recent-files h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.recent-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recent-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.recent-file-item:hover {
+  background: var(--tab-hover);
+  border-color: var(--text-secondary);
+  transform: translateX(4px);
+}
+
+.recent-file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-file-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.recent-file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.recent-file-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-file-path {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-file-remove {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 1rem;
+  opacity: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.recent-file-item:hover .recent-file-remove {
+  opacity: 1;
+}
+
+.recent-file-remove:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ef4444;
+}

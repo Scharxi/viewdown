@@ -1,7 +1,7 @@
 import {useState, useEffect, useRef, memo, useCallback} from "react";
 import {flushSync} from "react-dom";
 import {open} from "@tauri-apps/plugin-dialog";
-import {readTextFile} from "@tauri-apps/plugin-fs";
+import {readTextFile, exists} from "@tauri-apps/plugin-fs";
 import {listen} from "@tauri-apps/api/event";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -15,6 +15,14 @@ interface Tab {
     fileName: string;
     content: string;
 }
+
+interface RecentFile {
+    path: string;
+    name: string;
+    lastOpened: number;
+}
+
+const MAX_RECENT_FILES = 5;
 
 const MarkdownTab = memo(({content, isActive, isDarkMode}: {
     content: string;
@@ -81,6 +89,10 @@ function App() {
         const savedTheme = localStorage.getItem('theme');
         return savedTheme === 'dark';
     });
+    const [recentFiles, setRecentFiles] = useState<RecentFile[]>(() => {
+        const saved = localStorage.getItem('recentFiles');
+        return saved ? JSON.parse(saved) : [];
+    });
     const tabIdCounter = useRef(0);
 
     useEffect(() => {
@@ -88,11 +100,37 @@ function App() {
         document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
-    // NEUE LÖSUNG: Verwende flushSync für synchrones State Update
+    // Speichere Recent Files in localStorage
+    useEffect(() => {
+        localStorage.setItem('recentFiles', JSON.stringify(recentFiles));
+    }, [recentFiles]);
+
+    // Füge zu Recent Files hinzu
+    const addToRecentFiles = useCallback((filePath: string, fileName: string) => {
+        setRecentFiles(prev => {
+            // Entferne Duplikate
+            const filtered = prev.filter(f => f.path !== filePath);
+
+            // Füge neues File am Anfang hinzu
+            const newRecent: RecentFile = {
+                path: filePath,
+                name: fileName,
+                lastOpened: Date.now()
+            };
+
+            // Behalte nur die letzten MAX_RECENT_FILES
+            return [newRecent, ...filtered].slice(0, MAX_RECENT_FILES);
+        });
+    }, []);
+
+    // Öffne Datei und füge zu Recent hinzu
     const openFileByPath = useCallback(async (filePath: string) => {
         try {
             const content = await readTextFile(filePath);
             const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
+
+            // Füge zu Recent Files hinzu
+            addToRecentFiles(filePath, fileName);
 
             // Prüfe ob Tab bereits existiert
             const existingTab = tabs.find(tab => tab.filePath === filePath);
@@ -111,18 +149,41 @@ function App() {
                 content
             };
 
-            // Verwende flushSync um sicherzustellen dass der Tab gerendert wird
             flushSync(() => {
                 setTabs(prev => [...prev, newTab]);
             });
 
-            // Jetzt ist der Tab garantiert im DOM
             setActiveTabId(newTabId);
         } catch (error) {
             console.error('Fehler beim Öffnen der Datei:', error);
             console.error('Pfad:', filePath);
         }
-    }, [tabs]);
+    }, [tabs, addToRecentFiles]);
+
+    // Öffne Recent File mit Fehlerbehandlung
+    const openRecentFile = useCallback(async (file: RecentFile) => {
+        try {
+            // Prüfe ob Datei noch existiert
+            const fileExists = await exists(file.path);
+            if (!fileExists) {
+                // Entferne aus Recent Files
+                setRecentFiles(prev => prev.filter(f => f.path !== file.path));
+                alert(`Datei nicht gefunden: ${file.path}`);
+                return;
+            }
+
+            await openFileByPath(file.path);
+        } catch (error) {
+            console.error('Fehler beim Öffnen der Recent File:', error);
+            setRecentFiles(prev => prev.filter(f => f.path !== file.path));
+        }
+    }, [openFileByPath]);
+
+    // Entferne File aus Recent
+    const removeFromRecent = useCallback((path: string, event: React.MouseEvent) => {
+        event.stopPropagation();
+        setRecentFiles(prev => prev.filter(f => f.path !== path));
+    }, []);
 
     useEffect(() => {
         let unlistenCli: (() => void) | undefined;
@@ -406,7 +467,7 @@ function App() {
                 </div>
             )}
 
-            <main className="content">
+            <main className={`content ${tabs.length > 0 ? 'has-tabs' : ''}`}>
                 {tabs.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-state-content">
@@ -415,6 +476,37 @@ function App() {
                             <button onClick={openMarkdownFile} className="btn-primary">
                                 Datei öffnen
                             </button>
+
+                            {recentFiles.length > 0 && (
+                                <div className="recent-files">
+                                    <h3>Zuletzt geöffnet</h3>
+                                    <div className="recent-files-list">
+                                        {recentFiles.map((file) => (
+                                            <div
+                                                key={file.path}
+                                                className="recent-file-item"
+                                                onClick={() => openRecentFile(file)}
+                                            >
+                                                <div className="recent-file-info">
+                                                    <span className="recent-file-icon">📄</span>
+                                                    <div className="recent-file-details">
+                                                        <span className="recent-file-name">{file.name}</span>
+                                                        <span className="recent-file-path">{file.path}</span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    className="recent-file-remove"
+                                                    onClick={(e) => removeFromRecent(file.path, e)}
+                                                    title="Aus Liste entfernen"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="shortcuts-hint">
                                 <p style={{fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '2rem'}}>
                                     <strong>Shortcuts:</strong><br/>
