@@ -74,7 +74,7 @@ Technischer Hintergrund:
 
 ## Download
 
-Lade die neueste Version von [Releases](https://github.com/DEIN_USERNAME/viewdown/releases/latest) herunter.
+Lade die neueste Version von [Releases](https://github.com/Scharxi/viewdown/releases/latest) herunter.
 
 ## Lizenz
 
