@@ -1,5 +1,8 @@
 # Viewdown – Moderner Markdown Reader (Tauri + React)
 
+[![Release](https://github.com/Scharxi/viewdown/actions/workflows/release.yml/badge.svg)](https://github.com/Scharxi/viewdown/actions/workflows/release.yml)
+[![Build](https://github.com/Scharxi/viewdown/actions/workflows/build.yml/badge.svg)](https://github.com/Scharxi/viewdown/actions/workflows/build.yml)
+
 Viewdown ist ein schneller, schlanker und plattformübergreifender Markdown‑Reader. Ziehe einfach eine Datei ins Fenster, öffne sie per Dialog – oder starte Viewdown direkt mit einer Datei über die CLI. Mit Tabs, Dunkel-/Hellmodus, GitHub‑Flavored Markdown (GFM) und Syntax‑Highlighting für Code.
 
 ![Xnip2025-10-16_07-39-02.jpg](screenshots/Xnip2025-10-16_07-39-02.jpg)
@@ -57,6 +60,10 @@ Technischer Hintergrund:
 - `src/` – React App (Einstieg: `src/main.tsx`, App: `src/App.tsx`)
 - `src-tauri/` – Tauri (Rust) Code und Konfiguration
 - `public/` – statische Assets
+
+## Download
+
+Lade die neueste Version von [Releases](https://github.com/Scharxi/viewdown/releases/latest) herunter.
 
 ## Lizenz
 MIT
