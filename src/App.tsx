@@ -327,7 +327,7 @@ function App() {
             }}
         >
             <header className="header">
-                <h1 className="title">Markdown Reader</h1>
+                <h1 className="title">Viewdown</h1>
                 <div className="header-actions">
                     <button
                         onClick={() => setIsDarkMode(!isDarkMode)}
@@ -337,7 +337,7 @@ function App() {
                         {isDarkMode ? '☀️' : '🌙'}
                     </button>
                     <button onClick={openMarkdownFile} className="btn-primary">
-                        📄 Datei öffnen
+                        Datei öffnen
                     </button>
                 </div>
             </header>
@@ -372,7 +372,7 @@ function App() {
                             <h2>Keine Datei geöffnet</h2>
                             <p>Öffne eine Markdown-Datei oder ziehe sie ins Fenster</p>
                             <button onClick={openMarkdownFile} className="btn-primary">
-                                📄 Datei öffnen
+                                Datei öffnen
                             </button>
                         </div>
                     </div>
