@@ -88,41 +88,48 @@ function App() {
         document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
-    // NEUE LÖSUNG: Verwende flushSync für synchrones State Update
     const openFileByPath = useCallback(async (filePath: string) => {
         try {
             const content = await readTextFile(filePath);
             const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
 
-            // Prüfe ob Tab bereits existiert
-            const existingTab = tabs.find(tab => tab.filePath === filePath);
-            if (existingTab) {
-                setActiveTabId(existingTab.id);
-                return;
-            }
-
-            // Neuen Tab erstellen
-            tabIdCounter.current++;
-            const newTabId = `tab-${Date.now()}-${tabIdCounter.current}`;
-            const newTab: Tab = {
-                id: newTabId,
-                filePath,
-                fileName,
-                content
-            };
-
-            // Verwende flushSync um sicherzustellen dass der Tab gerendert wird
+            // Verwende flushSync mit functional update um Race Conditions zu vermeiden
+            let tabId: string | null = null;
+            
             flushSync(() => {
-                setTabs(prev => [...prev, newTab]);
+                setTabs(prev => {
+                    // Prüfe ob Tab bereits existiert
+                    const existingTab = prev.find(tab => tab.filePath === filePath);
+                    if (existingTab) {
+                        tabId = existingTab.id;
+                        return prev; // Keine Änderung
+                    }
+
+                    // Neuen Tab erstellen
+                    tabIdCounter.current++;
+                    const newTabId = `tab-${Date.now()}-${tabIdCounter.current}`;
+                    tabId = newTabId;
+                    
+                    const newTab: Tab = {
+                        id: newTabId,
+                        filePath,
+                        fileName,
+                        content
+                    };
+
+                    return [...prev, newTab];
+                });
             });
 
-            // Jetzt ist der Tab garantiert im DOM
-            setActiveTabId(newTabId);
+            // Aktiviere den Tab (entweder existierenden oder neuen)
+            if (tabId) {
+                setActiveTabId(tabId);
+            }
         } catch (error) {
             console.error('Fehler beim Öffnen der Datei:', error);
             console.error('Pfad:', filePath);
         }
-    }, [tabs]);
+    }, []);
 
     useEffect(() => {
         let unlistenCli: (() => void) | undefined;
