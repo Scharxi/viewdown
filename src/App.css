@@ -729,7 +729,7 @@ body[data-theme="dark"] .markdown-body pre {
   border-radius: 3px;
   font-size: 1rem;
   opacity: 0;
-  transition: all 0.2s;
+  transition: opacity 0.2s, background-color 0.2s, color 0.2s;
   flex-shrink: 0;
 }
 
