@@ -12,6 +12,7 @@ Viewdown ist ein schneller, schlanker und plattformübergreifender Markdown‑Re
 - Datei öffnen Dialog: Praktischer Button zum Öffnen lokaler Dateien
 - Mehrere Tabs: Mehrere Dateien parallel ansehen und schnell wechseln
 - Dark/Light Theme: Mit einem Klick zwischen hell und dunkel wechseln (persistiert)
+- Keyboard-Shortcuts Support
 - GitHub‑Flavored Markdown (GFM): Tabellen, Aufgabenlisten, Strikethrough u. v. m.
 - Syntax‑Highlighting: Schöne Codeblöcke via Prism Themes (One Dark, VS)
 - Desktop‑App mit Tauri: Schnell, leichtgewichtig, native Bundles
