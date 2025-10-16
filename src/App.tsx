@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef, memo, useCallback } from "react";
-import { open } from "@tauri-apps/plugin-dialog";
-import { readTextFile } from "@tauri-apps/plugin-fs";
-import { listen } from "@tauri-apps/api/event";
+import {useState, useEffect, useRef, memo, useCallback} from "react";
+import {flushSync} from "react-dom";
+import {open} from "@tauri-apps/plugin-dialog";
+import {readTextFile} from "@tauri-apps/plugin-fs";
+import {listen} from "@tauri-apps/api/event";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, vs } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {oneDark, vs} from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import "./App.css";
 
 interface Tab {
@@ -15,10 +16,13 @@ interface Tab {
     content: string;
 }
 
-// Memoized Markdown Component mit Theme-Support
-const MarkdownTab = memo(({ content, isActive, isDarkMode }: { content: string; isActive: boolean; isDarkMode: boolean }) => {
+const MarkdownTab = memo(({content, isActive, isDarkMode}: {
+    content: string;
+    isActive: boolean;
+    isDarkMode: boolean
+}) => {
     const codeComponent = useCallback((props: any) => {
-        const { children, className, ...rest } = props;
+        const {children, className, ...rest} = props;
         const match = /language-(\w+)/.exec(className || '');
 
         if (match) {
@@ -79,59 +83,54 @@ function App() {
     });
     const tabIdCounter = useRef(0);
 
-    // Theme in localStorage speichern
     useEffect(() => {
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
-    // openFileByPath mit useCallback, damit es immer den aktuellen State hat
+    // NEUE LÖSUNG: Verwende flushSync für synchrones State Update
     const openFileByPath = useCallback(async (filePath: string) => {
-        console.log('Opening file:', filePath);
-
         try {
             const content = await readTextFile(filePath);
             const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
 
-            setTabs(currentTabs => {
-                // Prüfe ob Tab bereits existiert
-                const existingTab = currentTabs.find(tab => tab.filePath === filePath);
-                if (existingTab) {
-                    setActiveTabId(existingTab.id);
-                    return currentTabs;
-                }
+            // Prüfe ob Tab bereits existiert
+            const existingTab = tabs.find(tab => tab.filePath === filePath);
+            if (existingTab) {
+                setActiveTabId(existingTab.id);
+                return;
+            }
 
-                // Neuen Tab erstellen
-                tabIdCounter.current++;
-                const newTab: Tab = {
-                    id: `tab-${Date.now()}-${tabIdCounter.current}`,
-                    filePath,
-                    fileName,
-                    content
-                };
+            // Neuen Tab erstellen
+            tabIdCounter.current++;
+            const newTabId = `tab-${Date.now()}-${tabIdCounter.current}`;
+            const newTab: Tab = {
+                id: newTabId,
+                filePath,
+                fileName,
+                content
+            };
 
-                setActiveTabId(newTab.id);
-                return [...currentTabs, newTab];
+            // Verwende flushSync um sicherzustellen dass der Tab gerendert wird
+            flushSync(() => {
+                setTabs(prev => [...prev, newTab]);
             });
 
-            console.log('File opened successfully:', fileName);
+            // Jetzt ist der Tab garantiert im DOM
+            setActiveTabId(newTabId);
         } catch (error) {
             console.error('Fehler beim Öffnen der Datei:', error);
             console.error('Pfad:', filePath);
         }
-    }, []);
+    }, [tabs]);
 
-    // CLI File Open Event Listener
     useEffect(() => {
         let unlistenCli: (() => void) | undefined;
 
         const setupCliListener = async () => {
-            console.log('Setting up CLI listener...');
             unlistenCli = await listen<string>('cli-open-file', async (event) => {
-                console.log('CLI event received:', event.payload);
                 await openFileByPath(event.payload);
             });
-            console.log('CLI listener ready');
         };
 
         setupCliListener();
@@ -141,7 +140,6 @@ function App() {
         };
     }, [openFileByPath]);
 
-    // Drag & Drop Event Listeners
     useEffect(() => {
         let unlistenEnter: (() => void) | undefined;
         let unlistenLeave: (() => void) | undefined;
@@ -178,44 +176,9 @@ function App() {
 
                     if (markdownFiles.length === 0) return;
 
-                    const loadedTabs = await Promise.all(
-                        markdownFiles.map(async (filePath, index) => {
-                            try {
-                                const content = await readTextFile(filePath);
-                                const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
-                                tabIdCounter.current++;
-                                return {
-                                    id: `tab-${Date.now()}-${tabIdCounter.current}-${index}`,
-                                    filePath,
-                                    fileName,
-                                    content
-                                } as Tab;
-                            } catch (error) {
-                                console.error(`Fehler beim Öffnen von ${filePath}:`, error);
-                                return null;
-                            }
-                        })
-                    );
-
-                    const validTabs = loadedTabs.filter(tab => tab !== null) as Tab[];
-
-                    setTabs(currentTabs => {
-                        const existingPaths = new Set(currentTabs.map(t => t.filePath));
-                        const uniqueNewTabs = validTabs.filter(tab => !existingPaths.has(tab.filePath));
-
-                        if (uniqueNewTabs.length === 0) {
-                            const firstExisting = currentTabs.find(t =>
-                                validTabs.some(vt => vt.filePath === t.filePath)
-                            );
-                            if (firstExisting) {
-                                setActiveTabId(firstExisting.id);
-                            }
-                            return currentTabs;
-                        }
-
-                        setActiveTabId(uniqueNewTabs[0].id);
-                        return [...currentTabs, ...uniqueNewTabs];
-                    });
+                    for (const filePath of markdownFiles) {
+                        await openFileByPath(filePath);
+                    }
                 }
             );
         };
@@ -227,9 +190,8 @@ function App() {
             if (unlistenLeave) unlistenLeave();
             if (unlistenDrop) unlistenDrop();
         };
-    }, []);
+    }, [openFileByPath]);
 
-    // Ensure the webview accepts drop anywhere by preventing default browser behavior
     useEffect(() => {
         const onDragOver = (e: DragEvent) => {
             e.preventDefault();
@@ -248,17 +210,15 @@ function App() {
             e.stopPropagation();
         };
 
-        // Add event listeners to the entire document
-        document.addEventListener('dragover', onDragOver, { passive: false });
-        document.addEventListener('drop', onDrop, { passive: false });
-        document.addEventListener('dragenter', onDragEnter, { passive: false });
-        document.addEventListener('dragleave', onDragLeave, { passive: false });
+        document.addEventListener('dragover', onDragOver, {passive: false});
+        document.addEventListener('drop', onDrop, {passive: false});
+        document.addEventListener('dragenter', onDragEnter, {passive: false});
+        document.addEventListener('dragleave', onDragLeave, {passive: false});
 
-        // Also add to window for extra coverage
-        window.addEventListener('dragover', onDragOver, { passive: false });
-        window.addEventListener('drop', onDrop, { passive: false });
-        window.addEventListener('dragenter', onDragEnter, { passive: false });
-        window.addEventListener('dragleave', onDragLeave, { passive: false });
+        window.addEventListener('dragover', onDragOver, {passive: false});
+        window.addEventListener('drop', onDrop, {passive: false});
+        window.addEventListener('dragenter', onDragEnter, {passive: false});
+        window.addEventListener('dragleave', onDragLeave, {passive: false});
 
         return () => {
             document.removeEventListener('dragover', onDragOver);
@@ -271,6 +231,80 @@ function App() {
             window.removeEventListener('dragleave', onDragLeave);
         };
     }, []);
+
+    const goToNextTab = useCallback(() => {
+        if (tabs.length === 0) return;
+        const currentIndex = tabs.findIndex(tab => tab.id === activeTabId);
+        const nextIndex = (currentIndex + 1) % tabs.length;
+        setActiveTabId(tabs[nextIndex].id);
+    }, [tabs, activeTabId]);
+
+    const goToPrevTab = useCallback(() => {
+        if (tabs.length === 0) return;
+        const currentIndex = tabs.findIndex(tab => tab.id === activeTabId);
+        const prevIndex = currentIndex <= 0 ? tabs.length - 1 : currentIndex - 1;
+        setActiveTabId(tabs[prevIndex].id);
+    }, [tabs, activeTabId]);
+
+    const closeActiveTab = useCallback(() => {
+        if (!activeTabId) return;
+        const newTabs = tabs.filter(tab => tab.id !== activeTabId);
+        setTabs(newTabs);
+
+        if (newTabs.length > 0) {
+            const closedIndex = tabs.findIndex(tab => tab.id === activeTabId);
+            const newActiveTab = newTabs[Math.max(0, closedIndex - 1)];
+            setActiveTabId(newActiveTab.id);
+        } else {
+            setActiveTabId(null);
+        }
+    }, [tabs, activeTabId]);
+
+    const toggleTheme = useCallback(() => {
+        setIsDarkMode(prev => !prev);
+    }, []);
+
+    useEffect(() => {
+        function handleKeyDown(e: KeyboardEvent) {
+            const modifier = e.ctrlKey || e.metaKey;
+
+            if (modifier && e.key === 'Tab' && !e.shiftKey) {
+                e.preventDefault();
+                goToNextTab();
+            }
+
+            if (modifier && e.shiftKey && e.key === 'Tab') {
+                e.preventDefault();
+                goToPrevTab();
+            }
+
+            if (modifier && e.key === 'w') {
+                e.preventDefault();
+                closeActiveTab();
+            }
+
+            if (modifier && e.key === 'o') {
+                e.preventDefault();
+                openMarkdownFile();
+            }
+
+            if (modifier && e.key === 't') {
+                e.preventDefault();
+                toggleTheme();
+            }
+
+            if (modifier && e.key >= '1' && e.key <= '9') {
+                e.preventDefault();
+                const tabIndex = parseInt(e.key) - 1;
+                if (tabs[tabIndex]) {
+                    setActiveTabId(tabs[tabIndex].id);
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [goToNextTab, goToPrevTab, closeActiveTab, toggleTheme, tabs]);
 
     async function openMarkdownFile() {
         try {
@@ -307,7 +341,7 @@ function App() {
     }
 
     return (
-        <div 
+        <div
             className={`app ${isDragging ? 'dragging' : ''}`}
             onDragOver={(e) => {
                 e.preventDefault();
@@ -330,13 +364,18 @@ function App() {
                 <h1 className="title">Viewdown</h1>
                 <div className="header-actions">
                     <button
-                        onClick={() => setIsDarkMode(!isDarkMode)}
+                        onClick={toggleTheme}
                         className="btn-theme"
-                        aria-label="Theme wechseln"
+                        aria-label="Theme wechseln (Ctrl+T)"
+                        title="Toggle Theme (Ctrl+T)"
                     >
                         {isDarkMode ? '☀️' : '🌙'}
                     </button>
-                    <button onClick={openMarkdownFile} className="btn-primary">
+                    <button
+                        onClick={openMarkdownFile}
+                        className="btn-primary"
+                        title="Datei öffnen (Ctrl+O)"
+                    >
                         Datei öffnen
                     </button>
                 </div>
@@ -345,17 +384,19 @@ function App() {
             {tabs.length > 0 && (
                 <div className="tabs-container">
                     <div className="tabs-list">
-                        {tabs.map(tab => (
+                        {tabs.map((tab, index) => (
                             <div
                                 key={tab.id}
                                 className={`tab ${activeTabId === tab.id ? 'active' : ''}`}
                                 onClick={() => setActiveTabId(tab.id)}
+                                title={`${tab.fileName} (Ctrl+${index + 1})`}
                             >
                                 <span className="tab-name">{tab.fileName}</span>
                                 <button
                                     className="tab-close"
                                     onClick={(e) => closeTab(tab.id, e)}
                                     aria-label="Tab schließen"
+                                    title="Close (Ctrl+W)"
                                 >
                                     ✕
                                 </button>
@@ -374,6 +415,14 @@ function App() {
                             <button onClick={openMarkdownFile} className="btn-primary">
                                 Datei öffnen
                             </button>
+                            <div className="shortcuts-hint">
+                                <p style={{fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '2rem'}}>
+                                    <strong>Shortcuts:</strong><br/>
+                                    Ctrl+O: Datei öffnen | Ctrl+W: Tab schließen<br/>
+                                    Ctrl+Tab: Nächster Tab | Ctrl+T: Theme wechseln<br/>
+                                    Ctrl+1-9: Tab direkt wechseln
+                                </p>
+                            </div>
                         </div>
                     </div>
                 ) : (
