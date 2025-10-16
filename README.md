@@ -15,7 +15,7 @@ GitHub‑Flavored Markdown (GFM) und Syntax‑Highlighting für Code.
 - Datei öffnen Dialog: Praktischer Button zum Öffnen lokaler Dateien
 - Mehrere Tabs: Mehrere Dateien parallel ansehen und schnell wechseln
 - Dark/Light Theme: Mit einem Klick zwischen hell und dunkel wechseln (persistiert)
-- Keyboard-Shortcut Support
+- Keyboard-Shortcuts Support
 - GitHub‑Flavored Markdown (GFM): Tabellen, Aufgabenlisten, Strikethrough u. v. m.
 - Syntax‑Highlighting: Schöne Codeblöcke via Prism Themes (One Dark, VS)
 - Desktop‑App mit Tauri: Schnell, leichtgewichtig, native Bundles
@@ -42,6 +42,16 @@ Hinweise:
 
 - Die Tauri‑Konfiguration liegt unter `src-tauri/tauri.conf.json`.
 - Während der Entwicklung läuft das Frontend (Vite) unter `http://localhost:1420`.
+
+## Instalation
+
+```
+# 1. Lade die neueste Version herunter
+wget https://github.com/Scharxi/viewdown/releases/latest/download/viewdown_1.0.0_amd64.deb
+
+# 2. Installiere das Paket
+sudo apt install ./viewdown_1.0.1_amd64.deb
+```
 
 ## Nutzung
 
@@ -78,5 +88,4 @@ Lade die neueste Version von [Releases](https://github.com/Scharxi/viewdown/rele
 
 ## Lizenz
 
-Dieses Projekt ist derzeit ohne explizite Lizenzdatei. Wenn du eine Lizenz benötigst oder das Projekt nutzen/weitergeben
-möchtest, füge bitte eine passende Lizenz hinzu (z. B. MIT) oder kontaktiere den Autor.
+MIT
