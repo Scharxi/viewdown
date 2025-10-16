@@ -58,13 +58,5 @@ Technischer Hintergrund:
 - `src-tauri/` – Tauri (Rust) Code und Konfiguration
 - `public/` – statische Assets
 
-
-## Roadmap / Ideen
-- Optional: Dateiüberwachung (Auto‑Reload bei Änderungen)
-- Druck / Export (PDF/HTML)
-- Einstellbare Schriftgröße und -familie
-- Anpassbares Syntax‑Theme pro Datei
-
-
 ## Lizenz
-Dieses Projekt ist derzeit ohne explizite Lizenzdatei. Wenn du eine Lizenz benötigst oder das Projekt nutzen/weitergeben möchtest, füge bitte eine passende Lizenz hinzu (z. B. MIT) oder kontaktiere den Autor.
+MIT
