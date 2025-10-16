@@ -182,6 +182,7 @@ function App() {
     // Entferne File aus Recent
     const removeFromRecent = useCallback((path: string, event: React.MouseEvent) => {
         event.stopPropagation();
+        event.preventDefault();
         setRecentFiles(prev => prev.filter(f => f.path !== path));
     }, []);
 
@@ -478,7 +479,7 @@ function App() {
                             </button>
 
                             {recentFiles.length > 0 && (
-                                <div className="recent-files">
+                                <div className="recent-files" key="recent-files-section">
                                     <h3>Zuletzt geöffnet</h3>
                                     <div className="recent-files-list">
                                         {recentFiles.map((file) => (
@@ -497,7 +498,9 @@ function App() {
                                                 <button
                                                     className="recent-file-remove"
                                                     onClick={(e) => removeFromRecent(file.path, e)}
+                                                    onMouseDown={(e) => e.stopPropagation()}
                                                     title="Aus Liste entfernen"
+                                                    aria-label="Aus Liste entfernen"
                                                 >
                                                     ✕
                                                 </button>

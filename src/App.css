@@ -672,7 +672,7 @@ body[data-theme="dark"] .markdown-body pre {
   border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .recent-file-item:hover {
