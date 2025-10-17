@@ -765,3 +765,128 @@ body[data-theme="dark"] .markdown-body pre {
     transform: translateX(-10px);
   }
 }
+
+/* ============================================
+   SEARCH FUNCTIONALITY
+   ============================================ */
+.search-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease-out;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2da44e;
+  box-shadow: 0 0 0 3px rgba(45, 164, 78, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-counter {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 50px;
+  text-align: right;
+  padding: 0 0.5rem;
+}
+
+.search-nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.search-nav-btn:hover:not(:disabled) {
+  background: var(--tab-hover);
+  border-color: var(--text-secondary);
+  transform: translateY(-1px);
+}
+
+.search-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1.125rem;
+  transition: color 0.2s;
+}
+
+.search-close-btn:hover {
+  color: #ef4444;
+}
+
+/* Search highlights */
+mark.search-highlight {
+  background-color: rgba(252, 210, 8, 0.4);
+  color: inherit;
+  padding: 0.05em 0.1em;
+  border-radius: 2px;
+}
+
+mark.search-highlight-current {
+  background-color: rgba(252, 210, 8, 0.8);
+  color: var(--text-primary);
+  padding: 0.05em 0.1em;
+  border-radius: 2px;
+  font-weight: 600;
+  box-shadow: 0 0 8px rgba(252, 210, 8, 0.4);
+}
+
+/* Adjust content position when search is open */
+.content {
+  padding-top: calc(4rem + 56px);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
