@@ -192,7 +192,17 @@ function App() {
     const removeFromRecent = useCallback((path: string, event: React.MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
-        setRecentFiles(prev => prev.filter(f => f.path !== path));
+        
+        // Finde das DOM Element und animiere es weg
+        const element = event.currentTarget.closest('.recent-file-item') as HTMLElement;
+        if (element) {
+            element.style.animation = 'fadeOut 0.2s ease-out forwards';
+            element.addEventListener('animationend', () => {
+                setRecentFiles(prev => prev.filter(f => f.path !== path));
+            }, { once: true });
+        } else {
+            setRecentFiles(prev => prev.filter(f => f.path !== path));
+        }
     }, []);
 
     useEffect(() => {
