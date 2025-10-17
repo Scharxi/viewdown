@@ -24,25 +24,6 @@ interface RecentFile {
 
 const MAX_RECENT_FILES = 5;
 
-// Highlight search matches in text
-const highlightMatches = (text: string, query: string, currentMatchIndex: number): string => {
-    if (!query) return text;
-    
-    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-    let matchCounter = 0;
-    
-    const highlighted = text.replace(regex, (match) => {
-        const isCurrentMatch = matchCounter === currentMatchIndex;
-        const className = isCurrentMatch ? 'search-highlight-current' : 'search-highlight';
-        const result = `<mark class="${className}">${match}</mark>`;
-        matchCounter++;
-        return result;
-    });
-    
-    return highlighted;
-};
-
 const MarkdownTab = memo(({content, isActive, isDarkMode, searchQuery, currentMatchIndex}: {
     content: string;
     isActive: boolean;
@@ -50,6 +31,8 @@ const MarkdownTab = memo(({content, isActive, isDarkMode, searchQuery, currentMa
     searchQuery?: string;
     currentMatchIndex?: number;
 }) => {
+    const articleRef = useRef<HTMLDivElement>(null);
+    
     const codeComponent = useCallback((props: any) => {
         const {children, className, ...rest} = props;
         const match = /language-(\w+)/.exec(className || '');
@@ -79,8 +62,91 @@ const MarkdownTab = memo(({content, isActive, isDarkMode, searchQuery, currentMa
         );
     }, [isDarkMode]);
 
+    // Highlight text nodes in the DOM
+    useEffect(() => {
+        if (!searchQuery || !articleRef.current) return;
+
+        const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // Erst alle Matches sammeln um den aktuellen Index zu kennen
+        const allMatches: Array<{ node: Text; offset: number; length: number }> = [];
+        let globalMatchIndex = 0;
+
+        const collectMatches = (node: Node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent!;
+                const regex = new RegExp(escapeRegex(searchQuery), 'gi');
+                let match;
+
+                while ((match = regex.exec(text)) !== null) {
+                    allMatches.push({
+                        node: node as Text,
+                        offset: match.index,
+                        length: match[0].length
+                    });
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const el = node as HTMLElement;
+                if (!['CODE', 'PRE', 'SCRIPT', 'STYLE'].includes(el.tagName)) {
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        collectMatches(node.childNodes[i]);
+                    }
+                }
+            }
+        };
+
+        collectMatches(articleRef.current);
+
+        // Jetzt die Matches vornehmen rückwärts (um Indizes nicht zu verfälschen)
+        const processedNodes = new Set<Text>();
+
+        for (let i = allMatches.length - 1; i >= 0; i--) {
+            const match = allMatches[i];
+            if (processedNodes.has(match.node)) continue;
+            processedNodes.add(match.node);
+
+            const text = match.node.textContent!;
+            const fragment = document.createDocumentFragment();
+            const regex = new RegExp(escapeRegex(searchQuery), 'gi');
+            let lastIndex = 0;
+            let matchResult;
+
+            while ((matchResult = regex.exec(text)) !== null) {
+                // Text vor dem Match
+                if (lastIndex < matchResult.index) {
+                    fragment.appendChild(
+                        document.createTextNode(text.substring(lastIndex, matchResult.index))
+                    );
+                }
+
+                // Bestimme ob dies das aktuelle Match ist
+                let isCurrentMatch = false;
+                if (currentMatchIndex !== undefined) {
+                    isCurrentMatch = globalMatchIndex === currentMatchIndex;
+                }
+                globalMatchIndex++;
+
+                // Mark erstellen
+                const mark = document.createElement('mark');
+                mark.className = isCurrentMatch ? 'search-highlight-current' : 'search-highlight';
+                mark.textContent = matchResult[0];
+                fragment.appendChild(mark);
+
+                lastIndex = regex.lastIndex;
+            }
+
+            // Restlicher Text
+            if (lastIndex < text.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+            }
+
+            match.node.parentNode!.replaceChild(fragment, match.node);
+        }
+    }, [searchQuery, currentMatchIndex]);
+
     return (
         <article
+            ref={articleRef}
             className={`markdown-body ${isActive ? 'active' : ''}`}
             style={{
                 display: isActive ? 'block' : 'none',
@@ -92,7 +158,7 @@ const MarkdownTab = memo(({content, isActive, isDarkMode, searchQuery, currentMa
                     code: codeComponent
                 }}
             >
-                {searchQuery ? highlightMatches(content, searchQuery, currentMatchIndex || 0) : content}
+                {content}
             </Markdown>
         </article>
     );
