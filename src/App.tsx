@@ -24,10 +24,31 @@ interface RecentFile {
 
 const MAX_RECENT_FILES = 5;
 
-const MarkdownTab = memo(({content, isActive, isDarkMode}: {
+// Highlight search matches in text
+const highlightMatches = (text: string, query: string, currentMatchIndex: number): string => {
+    if (!query) return text;
+    
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+    let matchCounter = 0;
+    
+    const highlighted = text.replace(regex, (match) => {
+        const isCurrentMatch = matchCounter === currentMatchIndex;
+        const className = isCurrentMatch ? 'search-highlight-current' : 'search-highlight';
+        const result = `<mark class="${className}">${match}</mark>`;
+        matchCounter++;
+        return result;
+    });
+    
+    return highlighted;
+};
+
+const MarkdownTab = memo(({content, isActive, isDarkMode, searchQuery, currentMatchIndex}: {
     content: string;
     isActive: boolean;
     isDarkMode: boolean
+    searchQuery?: string;
+    currentMatchIndex?: number;
 }) => {
     const codeComponent = useCallback((props: any) => {
         const {children, className, ...rest} = props;
@@ -71,14 +92,16 @@ const MarkdownTab = memo(({content, isActive, isDarkMode}: {
                     code: codeComponent
                 }}
             >
-                {content}
+                {searchQuery ? highlightMatches(content, searchQuery, currentMatchIndex || 0) : content}
             </Markdown>
         </article>
     );
 }, (prevProps, nextProps) => {
     return prevProps.content === nextProps.content &&
         prevProps.isActive === nextProps.isActive &&
-        prevProps.isDarkMode === nextProps.isDarkMode;
+        prevProps.isDarkMode === nextProps.isDarkMode &&
+        prevProps.searchQuery === nextProps.searchQuery &&
+        prevProps.currentMatchIndex === nextProps.currentMatchIndex;
 });
 
 function App() {
@@ -94,6 +117,13 @@ function App() {
         return saved ? JSON.parse(saved) : [];
     });
     const tabIdCounter = useRef(0);
+
+    // Search state
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+    const [matchCount, setMatchCount] = useState(0);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
@@ -345,9 +375,50 @@ function App() {
         setIsDarkMode(prev => !prev);
     }, []);
 
+    // Zähle Suchergebnisse
+    const countMatches = useCallback((text: string, query: string): number => {
+        if (!query) return 0;
+        const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        const matches = text.match(regex);
+        return matches ? matches.length : 0;
+    }, []);
+
+    // Aktualisiere Match-Count wenn sich Search Query oder Tab ändert
+    useEffect(() => {
+        const activeTab = tabs.find(tab => tab.id === activeTabId);
+        if (activeTab && searchQuery) {
+            const count = countMatches(activeTab.content, searchQuery);
+            setMatchCount(count);
+            setCurrentMatchIndex(0);
+        } else {
+            setMatchCount(0);
+            setCurrentMatchIndex(0);
+        }
+    }, [searchQuery, activeTabId, tabs, countMatches]);
+
+    // Navigiere zum nächsten Match
+    const goToNextMatch = useCallback(() => {
+        if (matchCount === 0) return;
+        setCurrentMatchIndex(prev => (prev + 1) % matchCount);
+    }, [matchCount]);
+
+    // Navigiere zum vorherigen Match
+    const goToPrevMatch = useCallback(() => {
+        if (matchCount === 0) return;
+        setCurrentMatchIndex(prev => (prev - 1 + matchCount) % matchCount);
+    }, [matchCount]);
+
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             const modifier = e.ctrlKey || e.metaKey;
+
+            if (modifier && e.key === 'f') {
+                e.preventDefault();
+                setIsSearchOpen(prev => !prev);
+                if (!isSearchOpen) {
+                    setTimeout(() => searchInputRef.current?.focus(), 0);
+                }
+            }
 
             if (modifier && e.key === 'Tab' && !e.shiftKey) {
                 e.preventDefault();
@@ -381,11 +452,30 @@ function App() {
                     setActiveTabId(tabs[tabIndex].id);
                 }
             }
+
+            // Search navigation
+            if (isSearchOpen) {
+                if (e.key === 'ArrowDown' || (modifier && e.key === 'g')) {
+                    e.preventDefault();
+                    goToNextMatch();
+                }
+
+                if (e.key === 'ArrowUp' || (modifier && e.shiftKey && e.key === 'g')) {
+                    e.preventDefault();
+                    goToPrevMatch();
+                }
+
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                }
+            }
         }
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [goToNextTab, goToPrevTab, closeActiveTab, toggleTheme, tabs]);
+    }, [goToNextTab, goToPrevTab, closeActiveTab, toggleTheme, tabs, goToNextMatch, goToPrevMatch, isSearchOpen]);
 
     async function openMarkdownFile() {
         try {
@@ -488,6 +578,53 @@ function App() {
             )}
 
             <main className="content">
+                {isSearchOpen && tabs.length > 0 && (
+                    <div className="search-bar">
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Datei durchsuchen..."
+                            className="search-input"
+                            aria-label="Dateien durchsuchen"
+                        />
+                        <div className="search-controls">
+                            <span className="search-counter">
+                                {matchCount === 0 ? 'Keine' : currentMatchIndex + 1} / {matchCount}
+                            </span>
+                            <button
+                                className="search-nav-btn"
+                                onClick={goToPrevMatch}
+                                disabled={matchCount === 0}
+                                title="Vorheriges (↑)"
+                                aria-label="Vorheriges Ergebnis"
+                            >
+                                ↑
+                            </button>
+                            <button
+                                className="search-nav-btn"
+                                onClick={goToNextMatch}
+                                disabled={matchCount === 0}
+                                title="Nächstes (↓)"
+                                aria-label="Nächstes Ergebnis"
+                            >
+                                ↓
+                            </button>
+                            <button
+                                className="search-close-btn"
+                                onClick={() => {
+                                    setIsSearchOpen(false);
+                                    setSearchQuery('');
+                                }}
+                                title="Schließen (ESC)"
+                                aria-label="Suche schließen"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                )}
                 {tabs.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-state-content">
@@ -547,6 +684,8 @@ function App() {
                                 content={tab.content}
                                 isActive={activeTabId === tab.id}
                                 isDarkMode={isDarkMode}
+                                searchQuery={searchQuery}
+                                currentMatchIndex={currentMatchIndex}
                             />
                         ))}
                     </>
